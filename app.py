@@ -4,7 +4,7 @@ import io
 import plotly.graph_objects as go
 
 # -------------------------
-# 🔥 HIDE STREAMLIT UI (LOGO, MENU, FOOTER)
+# 🔥 HIDE STREAMLIT UI (LOGO / MENU / FOOTER ONLY)
 # -------------------------
 st.markdown("""
     <style>
@@ -152,7 +152,7 @@ if st.button("🚀 Process Files"):
                 continue
 
     st.session_state["final_df"] = final.copy()
-    st.success("✅ Processing complete")
+    st.success("✅ Processing complete (cached)")
 
 # -------------------------
 # GRAPH
@@ -168,35 +168,38 @@ if st.session_state["final_df"] is not None:
     for col in plot_df.columns:
         plot_df[col] = pd.to_numeric(plot_df[col], errors='coerce')
 
-    plot_df["Time"] = pd.to_numeric(plot_df["Time"], errors='coerce')
-    plot_df = plot_df.dropna(subset=["Time"])
-    plot_df = plot_df.set_index("Time")
+    if "Time" not in plot_df.columns:
+        st.error("❌ Time column missing in template")
+    else:
+        plot_df["Time"] = pd.to_numeric(plot_df["Time"], errors='coerce')
+        plot_df = plot_df.dropna(subset=["Time"])
+        plot_df = plot_df.set_index("Time")
 
-    st.subheader("📊 Interactive Graph")
+        st.subheader("📊 Interactive Graph")
 
-    all_params = list(plot_df.columns)
+        all_params = list(plot_df.columns)
 
-    primary = st.multiselect("Primary Axis", all_params)
-    secondary = st.multiselect("Secondary Axis", all_params)
+        primary = st.multiselect("Primary Axis", all_params)
+        secondary = st.multiselect("Secondary Axis", all_params)
 
-    scale = st.number_input("Secondary Axis Scale", value=1.0)
+        scale = st.number_input("Secondary Axis Scale", value=1.0)
 
-    fig = go.Figure()
+        fig = go.Figure()
 
-    for p in primary:
-        fig.add_trace(go.Scatter(x=plot_df.index, y=plot_df[p], name=p, yaxis="y1"))
+        for p in primary:
+            fig.add_trace(go.Scatter(x=plot_df.index, y=plot_df[p], name=p, yaxis="y1"))
 
-    for p in secondary:
-        fig.add_trace(go.Scatter(x=plot_df.index, y=plot_df[p]/scale, name=f"{p} (scaled)", yaxis="y2"))
+        for p in secondary:
+            fig.add_trace(go.Scatter(x=plot_df.index, y=plot_df[p]/scale, name=f"{p} (scaled)", yaxis="y2"))
 
-    fig.update_layout(
-        xaxis_title="Time",
-        yaxis=dict(title="Primary Axis"),
-        yaxis2=dict(title="Secondary Axis", overlaying="y", side="right"),
-        hovermode="x unified"
-    )
+        fig.update_layout(
+            xaxis_title="Time",
+            yaxis=dict(title="Primary Axis"),
+            yaxis2=dict(title="Secondary Axis", overlaying="y", side="right"),
+            hovermode="x unified"
+        )
 
-    st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, use_container_width=True)
 
     # DOWNLOAD
     output = io.BytesIO()
@@ -206,7 +209,7 @@ if st.session_state["final_df"] is not None:
     st.download_button("📥 Download Final Output", data=output, file_name="Final_Output.xlsx")
 
 # -------------------------
-# HOW TO USE
+# HOW TO USE (UNCHANGED)
 # -------------------------
 st.markdown("---")
 st.header("📘 How to Use")
