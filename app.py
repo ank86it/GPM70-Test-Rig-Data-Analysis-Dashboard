@@ -4,6 +4,18 @@ import io
 import plotly.graph_objects as go
 
 # -------------------------
+# 🔥 HIDE STREAMLIT / GITHUB UI
+# -------------------------
+st.markdown("""
+    <style>
+        #MainMenu {visibility: hidden;}
+        footer {visibility: hidden;}
+        header {visibility: hidden;}
+        .stDeployButton {display:none;}
+    </style>
+""", unsafe_allow_html=True)
+
+# -------------------------
 # APP TITLE
 # -------------------------
 st.title("📊 GPM70 Test Rig Data Analysis Dashboard")
