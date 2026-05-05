@@ -3,7 +3,7 @@ import pandas as pd
 import io
 import plotly.graph_objects as go
 
-st.title("📊 Test Data Analysis Dashboard")
+st.title("📊 GPM70 Test Rig Data Analysis Dashboard")
 
 # -------------------------
 # SESSION INIT (CRITICAL FIX)
