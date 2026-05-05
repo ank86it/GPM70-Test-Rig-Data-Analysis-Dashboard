@@ -4,18 +4,6 @@ import io
 import plotly.graph_objects as go
 
 # -------------------------
-# 🔥 HIDE STREAMLIT UI (LOGO / MENU / FOOTER ONLY)
-# -------------------------
-st.markdown("""
-    <style>
-        #MainMenu {visibility: hidden;}
-        footer {visibility: hidden;}
-        header {visibility: hidden;}
-        .stDeployButton {display:none;}
-    </style>
-""", unsafe_allow_html=True)
-
-# -------------------------
 # APP TITLE
 # -------------------------
 st.title("📊 GPM70 Test Rig Data Analysis Dashboard")
@@ -85,12 +73,15 @@ if st.button("🚀 Process Files"):
     vs_avg = vs.groupby("Time").mean()
     rig = rig.set_index("Time")
 
+    # -------------------------
     # MOTOR CURRENT
+    # -------------------------
     motor_cols = [
         find_match("Phase I RY", pa_cols),
         find_match("Phase I YB", pa_cols),
         find_match("Phase I RB", pa_cols)
     ]
+
     motor_cols = [c for c in motor_cols if c is not None]
 
     if len(motor_cols) == 3:
@@ -100,9 +91,13 @@ if st.button("🚀 Process Files"):
                 if normalize(c) == normalize(mc):
                     mapped.append(c)
                     break
-        pa_avg["Motor Current"] = pa_avg[mapped].mean(axis=1)
 
-    # TEMPLATE PROCESS
+        pa_avg["Motor Current"] = pa_avg[mapped].mean(axis=1)
+        st.success("✅ Motor Current calculated")
+
+    # -------------------------
+    # TEMPLATE PROCESSING
+    # -------------------------
     headers = final.iloc[0]
     sources = final.iloc[1]
 
@@ -117,7 +112,12 @@ if st.button("🚀 Process Files"):
         param = str(param).strip()
         source = str(source).strip()
 
-        param_clean = param.replace("_PA","").replace("_VS","").replace("_Rig","").strip()
+        param_clean = (
+            param.replace("_PA", "")
+                 .replace("_VS", "")
+                 .replace("_Rig", "")
+                 .strip()
+        )
 
         if source == "PA":
             df, orig_cols = pa_avg, pa_cols
@@ -155,7 +155,7 @@ if st.button("🚀 Process Files"):
     st.success("✅ Processing complete (cached)")
 
 # -------------------------
-# GRAPH
+# GRAPH SECTION
 # -------------------------
 if st.session_state["final_df"] is not None:
 
@@ -206,19 +206,53 @@ if st.session_state["final_df"] is not None:
     final.to_excel(output, index=False, header=False)
     output.seek(0)
 
-    st.download_button("📥 Download Final Output", data=output, file_name="Final_Output.xlsx")
+    st.download_button(
+        "📥 Download Final Output",
+        data=output,
+        file_name="Final_Output.xlsx"
+    )
 
 # -------------------------
-# HOW TO USE (UNCHANGED)
+# HOW TO USE SECTION
 # -------------------------
 st.markdown("---")
-st.header("📘 How to Use")
+st.header("📘 How to Use This App")
 
 st.markdown("""
-1. Upload all files  
-2. Click Process  
-3. Select parameters  
-4. Download output  
+### 🔹 Steps
+1. Upload PA, VS, Rig and Final Template files  
+2. Click **Process Files**  
+3. Select parameters for graph  
+4. Download final output  
 
-Motor Current = Avg (RY, YB, RB)
+### 🔹 Notes
+- First column must be **Time**
+- No merged headers
+- Motor Current = Avg (RY, YB, RB)
+
+### 🔹 Recommended Plot
+- Primary → Temperature  
+- Secondary → Power / Current (scale 1000)
 """)
+
+# -------------------------
+# SAMPLE DOWNLOADS
+# -------------------------
+st.subheader("📥 Sample Files")
+
+def download_file(file_path, label):
+    try:
+        with open(file_path, "rb") as f:
+            st.download_button(label, f, file_path)
+    except:
+        st.warning(f"{file_path} not found")
+
+col1, col2 = st.columns(2)
+
+with col1:
+    download_file("sample_PA.xlsx", "Sample PA")
+    download_file("sample_VS.xlsx", "Sample VS")
+
+with col2:
+    download_file("sample_Rig.xlsx", "Sample Rig")
+    download_file("sample_Final_Template.xlsx", "Sample Template")
